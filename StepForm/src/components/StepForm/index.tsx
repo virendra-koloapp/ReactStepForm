@@ -46,6 +46,15 @@ type TTextField = FunctionComponent<
     error?: string;
   }
 >;
+type TTextSelect = FunctionComponent<
+  React.DetailedHTMLProps<
+    React.InputHTMLAttributes<HTMLSelectElement>,
+    HTMLSelectElement
+  > & {
+    label?: string;
+    error?: string;
+  }
+>;
 
 const TextField: TTextField = (props) => {
   return (
@@ -61,9 +70,35 @@ const TextField: TTextField = (props) => {
     </div>
   );
 };
+const SelectElement: TTextSelect = ({ options, ...props }) => {
+  return (
+    <div className="form-group  mt-4">
+      <label htmlFor="" className="form-label">
+        {props.label}
+      </label>
+      <select
+        className={`form-control ${props.error ? "is-invalid" : ""}`}
+        {...props}
+      >
+        {options.map((option) => (
+          <option value={option.value}>{option.text}</option>
+        ))}
+      </select>
+      <div className="invalid-feedback">{props.error}</div>
+    </div>
+  );
+};
 
 const Field = (props: any) => {
-  return <TextField {...props} />;
+  const defaultComponent = TextField;
+  const components = {
+    select: SelectElement,
+  };
+
+  console.log(props.type);
+  const Component = components[props.type] || defaultComponent;
+
+  return <Component {...props} />;
 };
 
 const createInitialFormValues = (fields: any[]) => {

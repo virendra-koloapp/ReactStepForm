@@ -27,6 +27,26 @@ const steps = [
         key: "Age",
         min: 18,
       },
+      {
+        type: "select",
+        options: [
+          {
+            value: "MP",
+            text: "Madhya Pradesh",
+          },
+          {
+            value: "CH",
+            text: "Chhatishgarh",
+          },
+          {
+            value: "UP",
+            text: "Uttar Pradesh",
+          },
+        ],
+        label: "State",
+        required: true,
+        key: "state",
+      },
     ],
   },
   {
