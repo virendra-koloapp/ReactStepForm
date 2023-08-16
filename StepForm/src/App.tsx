@@ -173,18 +173,44 @@ const steps = [
 function App() {
   const [done, setDone] = useState(false);
   const [values, setValues] = useState([]);
+  const [_steps, setSteps] = useState(steps);
+  const [json, setJson] = useState(JSON.stringify(steps, null, 4));
 
   const onDone = (values: any) => {
     setValues(values);
     setDone(true);
   };
+
+  const updateForms = () => {
+    setSteps(JSON.parse(json));
+  };
+
   return (
     <Fragment>
-      {done ? (
-        <pre>{JSON.stringify(values, null, 4)}</pre>
-      ) : (
-        <Steps steps={steps} onDone={onDone} />
-      )}
+      <button onClick={updateForms}>Update Form</button>
+      <div className="row">
+        <div className="col">
+          {done ? (
+            <pre>{JSON.stringify(values, null, 4)}</pre>
+          ) : (
+            <Steps steps={_steps} onDone={onDone} />
+          )}
+        </div>
+        <div className="col">
+          <textarea
+            cols={50}
+            rows={100}
+            onChange={(event) => {
+              try {
+                setJson(event.target.value);
+              } catch (error) {
+                console.log(error);
+              }
+            }}
+            value={json}
+          ></textarea>
+        </div>
+      </div>
     </Fragment>
   );
 }
