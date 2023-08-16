@@ -1,112 +1,5 @@
-import { useFormik } from "formik";
-import { Fragment, FunctionComponent, useEffect, useState } from "react";
-import * as Yup from "yup";
-
-const TextField: TTextField = (props) => {
-  return (
-    <div className="form-group  mt-4">
-      <label htmlFor="" className="form-label">
-        {props.label}
-      </label>
-      <input
-        className={`form-control ${props.error ? "is-invalid" : ""}`}
-        {...props}
-      />
-      <div className="invalid-feedback">{props.error}</div>
-    </div>
-  );
-};
-
-const Field = (props: any) => {
-  return <TextField {...props} />;
-};
-
-const Step = (props: any) => {
-  const fields = props.fields;
-  console.log(props);
-
-  const formik = useFormik({
-    initialValues: fields.reduce((acc: any, f) => {
-      acc[f.key] = "";
-      return acc;
-    }, {}) as any,
-    onSubmit: (values) => {
-      props.onNext(values);
-    },
-    validationSchema: Yup.object(
-      fields.reduce((acc, field) => {
-        let validation = Yup.string();
-
-        field.min && (validation = validation.min(field.min));
-        field.required && (validation = validation.required());
-
-        acc[field.key] = validation;
-
-        return acc;
-      }, {} as any)
-    ),
-  });
-
-  const hide = props.active;
-
-  return (
-    <div hidden={!hide} className="border p-4 rounded mt-4">
-      <form onSubmit={formik.handleSubmit}>
-        <h1>{props.title}</h1>
-        <hr />
-        {fields.map((field, index) => {
-          return (
-            <Field
-              {...field}
-              onChange={formik.handleChange}
-              value={formik.values[field.key]}
-              error={formik.touched[field.key] && formik.errors[field.key]}
-              name={field.key}
-              key={index}
-            />
-          );
-        })}
-
-        <div className="mt-4">
-          <button type="submit" className="btn btn-success">
-            Next Step
-          </button>
-        </div>
-      </form>
-    </div>
-  );
-};
-
-const Steps = (props: any) => {
-  const [activeStep, setActiveStep] = useState(1);
-  const [finalValues, setFinalValues] = useState<any[]>([]);
-  const totalSteps = props.steps.length;
-
-  const onNext = (values: any) => {
-    setFinalValues([...finalValues, values]);
-
-    setActiveStep(activeStep + 1);
-  };
-
-  useEffect(() => {
-    if (activeStep > totalSteps) {
-      props.onDone(finalValues);
-    }
-  }, [activeStep]);
-
-  return (
-    <Fragment>
-      {props.steps.map((step: any, index: number) => (
-        <Step
-          active={activeStep === index + 1}
-          onNext={onNext}
-          title={step.title}
-          fields={step.fields}
-        />
-      ))}
-    </Fragment>
-  );
-};
+import { Fragment, FunctionComponent, useState } from "react";
+import StepForm from "./components/StepForm";
 
 const steps = [
   {
@@ -126,6 +19,13 @@ const steps = [
         required: true,
         key: "lastName",
         min: 2,
+      },
+      {
+        type: "number",
+        label: "age",
+        required: true,
+        key: "Age",
+        min: 18,
       },
     ],
   },
@@ -187,28 +87,35 @@ function App() {
 
   return (
     <Fragment>
-      <button onClick={updateForms}>Update Form</button>
       <div className="row">
         <div className="col">
           {done ? (
             <pre>{JSON.stringify(values, null, 4)}</pre>
           ) : (
-            <Steps steps={_steps} onDone={onDone} />
+            <StepForm steps={_steps} onDone={onDone} />
           )}
         </div>
+
         <div className="col">
-          <textarea
-            cols={50}
-            rows={100}
-            onChange={(event) => {
-              try {
-                setJson(event.target.value);
-              } catch (error) {
-                console.log(error);
-              }
-            }}
-            value={json}
-          ></textarea>
+          <button className="btn btn-dark" onClick={updateForms}>
+            Update Form
+          </button>
+          <hr />
+          <div>
+            <textarea
+              className="form-control"
+              cols={50}
+              rows={100}
+              onChange={(event) => {
+                try {
+                  setJson(event.target.value);
+                } catch (error) {
+                  console.log(error);
+                }
+              }}
+              value={json}
+            ></textarea>
+          </div>
         </div>
       </div>
     </Fragment>
@@ -216,13 +123,3 @@ function App() {
 }
 
 export default App;
-
-type TTextField = FunctionComponent<
-  React.DetailedHTMLProps<
-    React.InputHTMLAttributes<HTMLInputElement>,
-    HTMLInputElement
-  > & {
-    label?: string;
-    error?: string;
-  }
->;
