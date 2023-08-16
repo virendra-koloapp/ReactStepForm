@@ -53,6 +53,10 @@ type TTextSelect = FunctionComponent<
   > & {
     label?: string;
     error?: string;
+    options: {
+      text: string;
+      value: string;
+    }[];
   }
 >;
 
