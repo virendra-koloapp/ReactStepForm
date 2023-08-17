@@ -24,8 +24,9 @@ const steps = [
         type: "number",
         label: "age",
         required: true,
-        key: "Age",
+        key: "age",
         min: 18,
+        hint: "when age is greater than 25 you will on 2nd step otherwise you will be on 3rd step",
       },
       {
         type: "select",
@@ -48,6 +49,28 @@ const steps = [
         key: "state",
       },
     ],
+    nextStep: {
+      defaultStep: 3,
+      rules: [
+        {
+          conditions: {
+            any: [
+              {
+                fact: "age",
+                operator: "greaterThanInclusive",
+                value: 25,
+              },
+            ],
+          },
+          event: {
+            type: "next-step",
+            params: {
+              step: 2,
+            },
+          },
+        },
+      ],
+    },
   },
   {
     title: "Credentials",

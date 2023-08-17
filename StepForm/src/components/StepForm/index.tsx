@@ -2,6 +2,8 @@ import { useFormik } from "formik";
 import { Fragment, FunctionComponent, useEffect, useState } from "react";
 import * as Yup from "yup";
 
+import { Engine } from "json-rules-engine";
+
 export default function StepForm(props) {
   return <Steps steps={props.steps} onDone={props.onDone} />;
 }
@@ -11,10 +13,9 @@ const Steps = (props: any) => {
   const [finalValues, setFinalValues] = useState<any[]>([]);
   const totalSteps = props.steps.length;
 
-  const onNext = (values: any) => {
+  const onNext = (values: any, nextStep) => {
     setFinalValues([...finalValues, values]);
-
-    setActiveStep(activeStep + 1);
+    setActiveStep(nextStep || activeStep + 1);
   };
 
   useEffect(() => {
@@ -30,6 +31,7 @@ const Steps = (props: any) => {
         <Step
           active={activeStep === index + 1}
           onNext={onNext}
+          nextStep={step.nextStep}
           title={`${activeStep}. ${step.title}`}
           fields={step.fields}
         />
@@ -45,6 +47,7 @@ type TTextField = FunctionComponent<
   > & {
     label?: string;
     error?: string;
+    hint?: string;
   }
 >;
 type TTextSelect = FunctionComponent<
@@ -71,6 +74,11 @@ const TextField: TTextField = (props) => {
         className={`form-control ${props.error ? "is-invalid" : ""}`}
         {...props}
       />
+      {props.hint && (
+        <small id="emailHelp" className="form-text text-muted">
+          {props.hint}
+        </small>
+      )}
       <div className="invalid-feedback">{props.error}</div>
     </div>
   );
@@ -100,7 +108,6 @@ const Field = (props: any) => {
     select: SelectElement,
   };
 
-  console.log(props.type);
   const Component = components[props.type] || defaultComponent;
 
   return <Component {...props} />;
@@ -133,10 +140,26 @@ const createValidationSchema = (fields: any[]) => {
 const Step = (props: any) => {
   const fields = props.fields;
 
+  const nextStep = props.nextStep;
+  const isConditional = typeof nextStep === "object";
+  const defaultStep = nextStep?.defaultStep;
+
   const formik = useFormik({
     initialValues: createInitialFormValues(fields),
     onSubmit: (values) => {
-      props.onNext(values);
+      console.log(values);
+      if (!isConditional) {
+        props.onNext(values);
+      }
+      const engine = new Engine();
+
+      nextStep.rules.forEach((rule) => {
+        engine.addRule(rule);
+      });
+
+      engine.run(values).then(({ events }) => {
+        props.onNext(values, events[0]?.params?.step || defaultStep);
+      });
     },
     validationSchema: createValidationSchema(fields),
   });
