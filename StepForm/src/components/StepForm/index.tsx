@@ -25,11 +25,12 @@ const Steps = (props: any) => {
 
   return (
     <Fragment>
+      =
       {props.steps.map((step: any, index: number) => (
         <Step
           active={activeStep === index + 1}
           onNext={onNext}
-          title={step.title}
+          title={`${activeStep}. ${step.title}`}
           fields={step.fields}
         />
       ))}
