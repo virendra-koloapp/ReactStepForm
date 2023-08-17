@@ -172,9 +172,11 @@ const Step = (props: any) => {
         const params = response?.events?.[0]?.params;
 
         if (params) {
-          props.onNext(values, params?.step || defaultStep);
+          props.onNext(values, params?.step);
+          return;
         }
       }
+      props.onNext(values, defaultStep);
     },
     validationSchema: createValidationSchema(fields),
   });
