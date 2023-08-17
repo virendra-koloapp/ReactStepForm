@@ -57,6 +57,7 @@ type TTextSelect = FunctionComponent<
   > & {
     label?: string;
     error?: string;
+    hint?: string;
     options: {
       text: string;
       value: string;
@@ -97,6 +98,11 @@ const SelectElement: TTextSelect = ({ options, ...props }) => {
           <option value={option.value}>{option.text}</option>
         ))}
       </select>
+      {props.hint && (
+        <small id="emailHelp" className="form-text text-muted">
+          {props.hint}
+        </small>
+      )}
       <div className="invalid-feedback">{props.error}</div>
     </div>
   );
@@ -146,20 +152,29 @@ const Step = (props: any) => {
 
   const formik = useFormik({
     initialValues: createInitialFormValues(fields),
-    onSubmit: (values) => {
+    onSubmit: async (values) => {
       console.log(values);
       if (!isConditional) {
         props.onNext(values);
       }
-      const engine = new Engine();
 
-      nextStep.rules.forEach((rule) => {
+      const rules = nextStep.rules || [];
+
+      const results = rules.map((rule) => {
+        const engine = new Engine();
         engine.addRule(rule);
+        return engine.run(values);
       });
 
-      engine.run(values).then(({ events }) => {
-        props.onNext(values, events[0]?.params?.step || defaultStep);
-      });
+      for (let index = 0; index < results.length; index++) {
+        const p = results[index];
+        const response = await p;
+        const params = response?.events?.[0]?.params;
+
+        if (params) {
+          props.onNext(values, params?.step || defaultStep);
+        }
+      }
     },
     validationSchema: createValidationSchema(fields),
   });

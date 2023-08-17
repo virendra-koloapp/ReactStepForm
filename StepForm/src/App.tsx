@@ -44,6 +44,7 @@ const steps = [
             text: "Uttar Pradesh",
           },
         ],
+        hint: "when age > 25 && state is UP = step 4 ",
         label: "State",
         required: true,
         key: "state",
@@ -54,7 +55,29 @@ const steps = [
       rules: [
         {
           conditions: {
-            any: [
+            all: [
+              {
+                fact: "age",
+                operator: "greaterThanInclusive",
+                value: 25,
+              },
+              {
+                fact: "state",
+                operator: "equal",
+                value: "UP",
+              },
+            ],
+          },
+          event: {
+            type: "next-step",
+            params: {
+              step: 4,
+            },
+          },
+        },
+        {
+          conditions: {
+            all: [
               {
                 fact: "age",
                 operator: "greaterThanInclusive",
